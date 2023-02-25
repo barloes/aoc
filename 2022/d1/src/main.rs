@@ -2,9 +2,12 @@ use std::cmp::max;
 use std::fs::File;
 use std::io::{ self, BufRead, BufReader };
 
-fn main() {
+use min_max_heap::MinMaxHeap;
 
-    let mut mx = 0;
+fn main() {
+    let mut heap = MinMaxHeap::<i32>::new();
+
+    // let mut mx = 0;
     let mut cur_elf_food = 0;
     for line in read_lines("./input".to_string()) {
         let temp = line.unwrap();
@@ -13,13 +16,20 @@ fn main() {
                 cur_elf_food += food_amt;
             }
             Err(_) => {
-                mx = max(mx, cur_elf_food);
+                // mx = max(mx, cur_elf_food);
+                heap.push(cur_elf_food);
                 cur_elf_food = 0;
             }
         }
     }
 
-    println!("{}", mx);
+    let mut ans = 0;
+    for _ in 0..3{
+        // print!("test {}",heap.peek_max().unwrap());
+        ans += heap.pop_max().unwrap();
+    }
+
+    println!("{}", ans);
 
 }
 

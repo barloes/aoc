@@ -181,6 +181,3 @@ fn get_all_directory_size(node: NodeIndex, graph: &Graph<Node, ()>) -> u32 {
 
     total_weight
 }
-
-// do it without static
-fn solution_2() {}

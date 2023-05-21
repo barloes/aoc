@@ -5,6 +5,7 @@ use std::{
 };
 
 use polynomial::Polynomial;
+use fraction::Fraction;
 
 #[derive(Clone, Copy, Debug)]
 enum Operation {
@@ -35,11 +36,11 @@ struct Monkey {
 // multiplier only affected by * and /
 #[derive(Clone, Debug)]
 struct FakeNumber{
-    value: Polynomial<f64>,
+    value: Polynomial<Fraction>,
 }
 
 impl FakeNumber {
-    fn new(polynomial: Polynomial<f64>) -> FakeNumber {
+    fn new(polynomial: Polynomial<Fraction>) -> FakeNumber {
         FakeNumber {
             value: polynomial,
         }
@@ -90,23 +91,23 @@ impl Div for FakeNumber {
             panic!();
         }
         else if self.value.data().len() > 1 {
-            let inverse = Polynomial::new(vec![1.0 / other.value.data()[0]]);
+            let inverse_other = Polynomial::new(vec![Fraction::from(1.0) / other.value.data()[0]]);
             return FakeNumber{
-                value: self.value * inverse,
+                value: self.value * inverse_other,
             }
         }
         else if other.value.data().len() > 1 {
             let mut new_inverse = vec![];
             for i in 0..other.value.data().len() {
-                let new_inverse_coefficient = 1.0 / other.value.data()[i];
+                let new_inverse_coefficient = Fraction::from(1.0) / other.value.data()[i];
                 new_inverse.push(new_inverse_coefficient);
             }
-            let inverse = Polynomial::new(new_inverse);
+            let inverse_other = Polynomial::new(new_inverse);
             return FakeNumber{
-                value: other.value * inverse,
+                value: self.value * inverse_other,
             }
         } else {
-            let other_inverse = Polynomial::new(vec![1.0 / other.value.data()[0]]);
+            let other_inverse = Polynomial::new(vec![Fraction::from(1.0) / other.value.data()[0]]);
             return FakeNumber{
                 value: self.value * other_inverse,
             };
@@ -174,8 +175,8 @@ impl Monkey {
                     Some(self.left.as_ref().unwrap().1.as_ref().unwrap().clone() / self.right.as_ref().unwrap().1.as_ref().unwrap().clone())
                 }
                 Some(Operation::EQUAL) => {
-                    // print left and right
-                    // end it
+                    // get the left side and right side as an equation
+                    // eg mx + c = rhs and solve for x. 
                     dbg!(self.left.as_ref().unwrap().1.as_ref().unwrap());
                     dbg!(self.right.as_ref().unwrap().1.as_ref().unwrap());
                     panic!()
@@ -238,7 +239,8 @@ impl Game {
 
             visited.insert(cur.clone().identifier);
             if cur.identifier == "root" {
-                return self.get_monkey(&cur).unwrap().final_result.as_ref().unwrap().value.data()[0] as i64;
+                dbg!(self.get_monkey(&cur).unwrap().final_result.as_ref().unwrap().value.data()[0]);
+                return 1;
             }
 
             self.update_map.get(&cur.clone().identifier).unwrap().iter().for_each(|monkey_to_update_identifier| {
@@ -273,7 +275,7 @@ fn main() {
         None,
         None,
         None,
-        Some(FakeNumber::new(Polynomial::new(vec![0.0, 1.0])))
+        Some(FakeNumber::new(Polynomial::new(vec![Fraction::from(0), Fraction::from(1)])))
     );
     new_monkey_list.push(new_monkey);
     let mut game_2 = Game::new(&new_monkey_list);
@@ -293,7 +295,7 @@ fn read_input(filename: String) -> Vec<Monkey> {
                 None,
                 None,
                 None,
-                Some(FakeNumber::new(Polynomial::new(vec![final_result as f64]))),
+                Some(FakeNumber::new(Polynomial::new(vec![Fraction::from(final_result)]))),
             ));
         } else {
             let left_identifier = splitted[1];
